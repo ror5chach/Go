@@ -35,7 +35,7 @@ func (c circle) perimeter() float64 {
 }
 
 func measure (s shape) {
-	fmt.Printf("%T %v\n",s, s)
+	fmt.Printf("%T %+v\n",s, s)
 	fmt.Printf("%v\n", s.area())
 	fmt.Printf("%g\n\n", s.perimeter())
 }
