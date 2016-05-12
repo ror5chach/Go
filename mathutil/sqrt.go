@@ -1,15 +1,8 @@
 package mathutil
 
-import "fmt"
+import "math"
 
-type ErrNegativeSqrt float64
-
-func (e ErrNegativeSqrt) Error() string {
-	return fmt.Sprintf("cannot Sqrt negative number: %.f", float64(e))
-	//return fmt.Sprint(float64(e))
-}
-
-func Sqrt(x float64) (float64, error) {
+func Sqrt(x float64) (float64) {
 	if (x > 0) {
 		// pick a starting point
 		z := x/2		
@@ -23,17 +16,12 @@ func Sqrt(x float64) (float64, error) {
 			}
 			z = nextZ
 		}
-		return z, nil
+		return z
 	} else {
 		if (x == 0) {
-			return 0, nil
+			return 0
 		} else {
-			return -1, ErrNegativeSqrt(x)
+			return math.NaN()
 		}
 	}
-}
-
-func main() {
-	fmt.Println(Sqrt(2))
-	fmt.Println(Sqrt(-2))
 }
