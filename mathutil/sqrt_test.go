@@ -12,7 +12,7 @@ func TestSqrt(t *testing.T) {
 		{2, 1.414},
 		{10, 3.162},
 		{0, 0},
-		//{-1, math.NaN()},
+		//{-4, -1},
 	}	
 	for _, c := range cases {
 		got := Sqrt(c.in)
