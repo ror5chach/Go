@@ -10,46 +10,39 @@ type Fetcher interface {
 	Fetch(url string) (body string, urls []string, err error)
 }
 
-type FetcherResult struct {
-	body string
-	urls []string
-	err error
+func CrawlHelper(url string, fetcher Fetcher, ch chan []string) {
+	body, urls, err := fetcher.Fetch(url)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Printf("URL: %s, Body: %q\n", url, body)
+	}
+	ch<-urls
 }
 
-func CrawlHelper(url string, depth int, fetcher Fetcher, ch chan *FetcherResult) {
-	fmt.Println("start crawl")
-	
-	if (depth <= 0) {
-		close(ch)
-		return
-	}
-	
-	var fr FetcherResult
-	fr.body, fr.urls, fr.err = fetcher.Fetch(url)
-	
-	ch <-&fr
-}
+var fetchedChannels map[string]bool
 
 // Crawl uses fetcher to recursively crawl
 // pages starting with url, to a maximum of depth.
 func Crawl(url string, depth int, fetcher Fetcher) {
 	
-	ch := make(chan *FetcherResult)
+	fetchedChannels := make(map[string]bool)
+	ch := make(chan []string)
 	
-	mapFetcherResult := make(map[string]bool)
-	mapFetcherResult[url] = true
+	go CrawlHelper(url, fetcher, ch)
 	
-	go CrawlHelper(url, depth, fetcher, ch)
-	
-	for res := range ch {
-		for _, urlVal := range res.urls {
-			_, found := mapFetcherResult[urlVal]
-			if !found {
-				mapFetcherResult[urlVal] = true
-				
-				fmt.Println("URL: ", urlVal, " ,Body: ", res.body)
-				depth--
-				go CrawlHelper(urlVal, depth, fetcher, ch)
+	init := 1
+	fetchedChannels[url] = true
+	for i := 0; i < depth; i++ {
+			for init > 0 {
+			init --
+			children := <-ch
+			for _, childUrl := range children {
+				if _, found := fetchedChannels[childUrl]; !found {
+					fetchedChannels[childUrl] = true
+					init++
+					go CrawlHelper(childUrl, fetcher, ch)
+				}
 			}
 		}
 	}
